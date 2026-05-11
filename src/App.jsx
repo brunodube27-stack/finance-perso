@@ -68,6 +68,10 @@ function App() {
                 {t === 'transactions' ? 'Transactions' : 'Budget'}
               </button>
             ))}
+            <button onClick={() => supabase.auth.signOut()}
+              className="ml-auto px-3 py-1 rounded-full text-sm bg-red-50 text-red-600 border border-red-200">
+              Déconnexion
+            </button>
           </div>
           {tab === 'transactions' && <TransactionList />}
           {tab === 'budget' && <BudgetConfig />}
@@ -94,7 +98,7 @@ function App() {
           </button>
         ))}
       </div>
-      <div className="pb-16">
+      <div style={{ paddingBottom: '120px' }}>
         {renderPage()}
       </div>
     </div>
