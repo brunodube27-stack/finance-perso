@@ -84,21 +84,21 @@ function App() {
     { key: 'dashboard', label: 'Dashboard', color: 'blue' },
     { key: 'add', label: '+ Dépense', color: 'red' },
     { key: 'income', label: '+ Revenu', color: 'green' },
-    { key: 'investissements', label: 'Investissements', color: 'yellow' },
+    { key: 'investissements', label: 'Invest.', color: 'yellow' },
     { key: 'plus', label: 'Plus', color: 'gray' },
   ]
 
   return (
     <div>
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t flex">
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999, backgroundColor: 'white', borderTop: '1px solid #e5e7eb', display: 'flex' }}>
         {navItems.map(({ key, label, color }) => (
           <button key={key} onClick={() => navigate(key)}
-            className={`flex-1 p-3 text-xs font-medium ${page === key ? `text-${color}-600 border-t-2 border-${color}-600` : 'text-gray-500'}`}>
+            style={{ flex: 1, padding: '12px 4px', fontSize: '11px', fontWeight: '500', color: page === key ? '#2563eb' : '#6b7280', borderTop: page === key ? '2px solid #2563eb' : '2px solid transparent', background: 'none', border: 'none', borderTop: page === key ? '2px solid #2563eb' : '2px solid transparent' }}>
             {label}
           </button>
         ))}
       </div>
-      <div style={{ paddingBottom: '120px' }}>
+      <div style={{ paddingBottom: '80px' }}>
         {renderPage()}
       </div>
     </div>
