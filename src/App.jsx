@@ -8,11 +8,13 @@ import BudgetConfig from './pages/BudgetConfig'
 import Dashboard from './pages/Dashboard'
 import SavingsTracking from './pages/SavingsTracking'
 import NetWorth from './pages/NetWorth'
+import Metaux from './pages/Metaux'
 
 function App() {
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState('dashboard')
+  const [subPage, setSubPage] = useState(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -28,47 +30,72 @@ function App() {
   if (loading) return <div style={{ padding: '24px' }}>Chargement...</div>
   if (!session) return <Login />
 
+  function navigate(p, sub = null) {
+    setPage(p)
+    setSubPage(sub)
+  }
+
+  function renderPage() {
+    if (page === 'dashboard') return <Dashboard />
+    if (page === 'add') return <AddTransaction />
+    if (page === 'income') return <AddIncome />
+    if (page === 'investissements') {
+      const tab = subPage || 'epargne'
+      return (
+        <div>
+          <div className="flex gap-2 p-4 border-b">
+            {['epargne', 'networth', 'metaux'].map(t => (
+              <button key={t} onClick={() => setSubPage(t)}
+                className={`px-3 py-1 rounded-full text-sm ${tab === t ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>
+                {t === 'epargne' ? 'Épargne' : t === 'networth' ? 'Net Worth' : 'Métaux'}
+              </button>
+            ))}
+          </div>
+          {tab === 'epargne' && <SavingsTracking />}
+          {tab === 'networth' && <NetWorth />}
+          {tab === 'metaux' && <Metaux />}
+        </div>
+      )
+    }
+    if (page === 'plus') {
+      const tab = subPage || 'transactions'
+      return (
+        <div>
+          <div className="flex gap-2 p-4 border-b">
+            {['transactions', 'budget'].map(t => (
+              <button key={t} onClick={() => setSubPage(t)}
+                className={`px-3 py-1 rounded-full text-sm ${tab === t ? 'bg-gray-800 text-white' : 'bg-gray-100'}`}>
+                {t === 'transactions' ? 'Transactions' : 'Budget'}
+              </button>
+            ))}
+          </div>
+          {tab === 'transactions' && <TransactionList />}
+          {tab === 'budget' && <BudgetConfig />}
+        </div>
+      )
+    }
+  }
+
+  const navItems = [
+    { key: 'dashboard', label: 'Dashboard', color: 'blue' },
+    { key: 'add', label: '+ Dépense', color: 'red' },
+    { key: 'income', label: '+ Revenu', color: 'green' },
+    { key: 'investissements', label: 'Investissements', color: 'yellow' },
+    { key: 'plus', label: 'Plus', color: 'gray' },
+  ]
+
   return (
     <div>
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t flex">
-        <button onClick={() => setPage('dashboard')}
-          className={`flex-1 p-3 text-xs font-medium ${page === 'dashboard' ? 'text-blue-600 border-t-2 border-blue-600' : 'text-gray-500'}`}>
-          Dashboard
-        </button>
-        <button onClick={() => setPage('list')}
-          className={`flex-1 p-3 text-xs font-medium ${page === 'list' ? 'text-blue-600 border-t-2 border-blue-600' : 'text-gray-500'}`}>
-          Transactions
-        </button>
-        <button onClick={() => setPage('add')}
-          className={`flex-1 p-3 text-xs font-medium ${page === 'add' ? 'text-blue-600 border-t-2 border-blue-600' : 'text-gray-500'}`}>
-          + Dépense
-        </button>
-        <button onClick={() => setPage('income')}
-          className={`flex-1 p-3 text-xs font-medium ${page === 'income' ? 'text-green-600 border-t-2 border-green-600' : 'text-gray-500'}`}>
-          + Revenu
-        </button>
-        <button onClick={() => setPage('budget')}
-          className={`flex-1 p-3 text-xs font-medium ${page === 'budget' ? 'text-purple-600 border-t-2 border-purple-600' : 'text-gray-500'}`}>
-          Budget
-        </button>
-        <button onClick={() => setPage('savings')}
-          className={`flex-1 p-3 text-xs font-medium ${page === 'savings' ? 'text-blue-600 border-t-2 border-blue-600' : 'text-gray-500'}`}>
-          Épargne
-        </button>
-        <button onClick={() => setPage('networth')}
-          className={`flex-1 p-3 text-xs font-medium ${page === 'networth' ? 'text-blue-600 border-t-2 border-blue-600' : 'text-gray-500'}`}>
-          Net Worth
-        </button>
+        {navItems.map(({ key, label, color }) => (
+          <button key={key} onClick={() => navigate(key)}
+            className={`flex-1 p-3 text-xs font-medium ${page === key ? `text-${color}-600 border-t-2 border-${color}-600` : 'text-gray-500'}`}>
+            {label}
+          </button>
+        ))}
       </div>
-
       <div className="pb-16">
-        {page === 'dashboard' && <Dashboard />}
-        {page === 'list' && <TransactionList />}
-        {page === 'add' && <AddTransaction />}
-        {page === 'income' && <AddIncome />}
-        {page === 'budget' && <BudgetConfig />}
-        {page === 'savings' && <SavingsTracking />}
-        {page === 'networth' && <NetWorth />}
+        {renderPage()}
       </div>
     </div>
   )
