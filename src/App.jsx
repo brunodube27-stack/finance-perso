@@ -1,4 +1,4 @@
-jsximport { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 import Login from './pages/Login'
 import AddTransaction from './pages/AddTransaction'
