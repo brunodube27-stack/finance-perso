@@ -24,6 +24,10 @@ export default function Dashboard() {
         .gte('date', from)
         .lte('date', to)
 
+
+
+
+
       const totalIncome = incomes?.reduce((s, i) => s + parseFloat(i.amount), 0) || 0
       const totalSpending = incomes?.reduce((s, i) => s + parseFloat(i.split_spending), 0) || 0
       const totalSavings = incomes?.reduce((s, i) => s + parseFloat(i.split_savings), 0) || 0
@@ -40,6 +44,14 @@ export default function Dashboard() {
         .from('budget')
         .select('*, categories(id, code, name, block)')
         .eq('year', year)
+
+      const { data: budgetConfig } = await supabase
+        .from('income_target')
+        .select('amount_target')
+        .eq('year', year)
+        .single()
+
+      const revenuCible = budgetConfig ? parseFloat(budgetConfig.amount_target) / 12 : 0
 
       const spentMap = {}
       transactions?.forEach(t => {
@@ -64,7 +76,7 @@ export default function Dashboard() {
       }) || []
 
       setData(rows)
-      setSummary({ totalIncome, totalSpending, totalSavings, totalRetirement })
+      setSummary({ totalIncome, totalSpending, totalSavings, totalRetirement, revenuCible })
       setLoading(false)
     }
     fetchData()
@@ -81,7 +93,6 @@ export default function Dashboard() {
   return (
     <div style={{ maxWidth: '480px', margin: '0 auto', padding: '16px', paddingBottom: '96px' }}>
 
-      {/* Sélecteur mois */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
         <select value={month} onChange={e => setMonth(Number(e.target.value))}
           style={{ flex: 1, border: '1px solid #d1d5db', borderRadius: '8px', padding: '8px' }}>
@@ -99,7 +110,6 @@ export default function Dashboard() {
         </select>
       </div>
 
-      {/* Blocs 10/35/55 */}
       {summary && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '24px' }}>
           <BlockCard label="Retraite 10%" amount={summary.totalRetirement} bg="#eff6ff" color="#1d4ed8" />
@@ -108,15 +118,23 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Revenu total */}
       {summary && (
-        <div style={{ background: '#f3f4f6', borderRadius: '8px', padding: '12px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: '14px', color: '#6b7280' }}>Revenu net du mois</span>
-          <span style={{ fontWeight: 'bold' }}>{summary.totalIncome.toFixed(2)} $</span>
+        <div style={{ background: '#f3f4f6', borderRadius: '8px', padding: '12px', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+            <span style={{ fontSize: '14px', color: '#6b7280' }}>Revenu net du mois</span>
+            <span style={{ fontWeight: 'bold' }}>{summary.totalIncome.toFixed(2)} $</span>
+          </div>
+          {summary.revenuCible > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '12px', color: '#9ca3af' }}>Cible mensuelle</span>
+              <span style={{ fontSize: '12px', color: summary.totalIncome >= summary.revenuCible ? '#16a34a' : '#dc2626', fontWeight: '500' }}>
+                {summary.revenuCible.toFixed(2)} $ {summary.totalIncome >= summary.revenuCible ? '✅' : '⚠️'}
+              </span>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Dépenses */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
         <h2 style={{ fontWeight: 'bold', color: '#374151' }}>🛒 Dépenses (55%)</h2>
         <span style={{ fontSize: '14px', fontWeight: '500', color: totalSpent > totalBudget ? '#dc2626' : '#16a34a' }}>
@@ -127,13 +145,11 @@ export default function Dashboard() {
         {spendingRows.map(r => <CategoryRow key={r.id} row={r} />)}
       </div>
 
-      {/* Épargne */}
       <h2 style={{ fontWeight: 'bold', color: '#374151', marginBottom: '8px' }}>💰 Épargne (35%)</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
         {savingsRows.map(r => <CategoryRow key={r.id} row={r} />)}
       </div>
 
-      {/* Retraite */}
       <h2 style={{ fontWeight: 'bold', color: '#374151', marginBottom: '8px' }}>🏦 Retraite (10%)</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {retirementRows.map(r => <CategoryRow key={r.id} row={r} />)}
