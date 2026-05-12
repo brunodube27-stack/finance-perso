@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+jsximport { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 import Login from './pages/Login'
 import AddTransaction from './pages/AddTransaction'
@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard'
 import SavingsTracking from './pages/SavingsTracking'
 import NetWorth from './pages/NetWorth'
 import Metaux from './pages/Metaux'
+import ImportCSV from './pages/ImportCSV'
 
 function App() {
   const [session, setSession] = useState(null)
@@ -61,11 +62,11 @@ function App() {
       const tab = subPage || 'transactions'
       return (
         <div>
-          <div className="flex gap-2 p-4 border-b">
-            {['transactions', 'budget'].map(t => (
+          <div className="flex gap-2 p-4 border-b flex-wrap">
+            {['transactions', 'budget', 'import'].map(t => (
               <button key={t} onClick={() => setSubPage(t)}
                 className={`px-3 py-1 rounded-full text-sm ${tab === t ? 'bg-gray-800 text-white' : 'bg-gray-100'}`}>
-                {t === 'transactions' ? 'Transactions' : 'Budget'}
+                {t === 'transactions' ? 'Transactions' : t === 'budget' ? 'Budget' : 'Import CSV'}
               </button>
             ))}
             <button onClick={() => supabase.auth.signOut()}
@@ -75,6 +76,7 @@ function App() {
           </div>
           {tab === 'transactions' && <TransactionList />}
           {tab === 'budget' && <BudgetConfig />}
+          {tab === 'import' && <ImportCSV />}
         </div>
       )
     }
