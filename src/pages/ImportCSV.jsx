@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 
-function parseCSBC(text) {
+function parseCIBC(text) {
   return text.trim().split('\n').map(line => {
     const cols = line.match(/(".*?"|[^,]+)(?=,|$)/g) || []
     const date = cols[0]?.trim()
     const description = cols[1]?.replace(/"/g, '').trim()
     const montant = parseFloat(cols[2])
     if (!date || !description || isNaN(montant)) return null
-    return { date, description, montant: -montant, type: 'debit', source: 'CIBC' }
+    return { date, description, montant: montant, source: 'CIBC' }
   }).filter(Boolean)
 }
 
@@ -24,7 +24,7 @@ function parseBMO(text) {
     if (!dateRaw || isNaN(montantRaw)) return null
     const date = `${dateRaw.slice(0, 4)}-${dateRaw.slice(4, 6)}-${dateRaw.slice(6, 8)}`
     const montant = type === 'DEBIT' ? Math.abs(montantRaw) : -Math.abs(montantRaw)
-    return { date, description, montant, type: type === 'DEBIT' ? 'debit' : 'credit', source: 'BMO' }
+    return { date, description, montant, source: 'BMO' }
   }).filter(Boolean)
 }
 
@@ -63,9 +63,8 @@ export default function ImportCSV() {
     if (!file) return
     const text = await file.text()
     const format = detectFormat(text)
-    const parsed = format === 'BMO' ? parseBMO(text) : parseCSBC(text)
+    const parsed = format === 'BMO' ? parseBMO(text) : parseCIBC(text)
 
-    // Cherche les doublons dans Supabase
     const { data: existing } = await supabase
       .from('transactions')
       .select('date, description, amount')
@@ -84,7 +83,6 @@ export default function ImportCSV() {
     setDoublons(doublonSet)
     setTransactions(parsed)
 
-    // Sélectionne tout sauf doublons par défaut
     const sel = {}
     parsed.forEach((_, i) => { sel[i] = !doublonSet.has(i) })
     setSelected(sel)
@@ -107,7 +105,7 @@ export default function ImportCSV() {
 
     const toImport = transactions
       .filter((_, i) => selected[i])
-      .map((t, idx) => {
+      .map((t) => {
         const i = transactions.indexOf(t)
         return {
           date: t.date,
@@ -116,7 +114,8 @@ export default function ImportCSV() {
           category_id: catAssign[i] || null,
           account_id: compteAssign[i] || null,
           user_id: user.id,
-          type: t.type,
+          type: 'expense',
+          source: t.source,
         }
       })
 
@@ -144,7 +143,6 @@ export default function ImportCSV() {
 
       {transactions.length > 0 && (
         <>
-          {/* Assignation par défaut */}
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
             <p className="text-sm font-semibold text-blue-800 mb-2">Assignation par défaut</p>
             <div className="flex gap-2 mb-2">
@@ -165,7 +163,6 @@ export default function ImportCSV() {
             </button>
           </div>
 
-          {/* Liste transactions */}
           <div className="space-y-2 mb-4">
             {transactions.map((t, i) => (
               <div key={i} className={`border rounded-xl p-3 ${doublons.has(i) ? 'border-orange-300 bg-orange-50' : 'bg-white'}`}>
