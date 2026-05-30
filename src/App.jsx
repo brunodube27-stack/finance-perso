@@ -10,6 +10,7 @@ import SavingsTracking from './pages/SavingsTracking'
 import NetWorth from './pages/NetWorth'
 import Metaux from './pages/Metaux'
 import ImportCSV from './pages/ImportCSV'
+import Soldes from './pages/Soldes'
 
 function App() {
   const [session, setSession] = useState(null)
@@ -63,10 +64,10 @@ function App() {
       return (
         <div>
           <div className="flex gap-2 p-4 border-b flex-wrap">
-            {['transactions', 'budget', 'import'].map(t => (
+            {['transactions', 'budget', 'import', 'soldes'].map(t => (
               <button key={t} onClick={() => setSubPage(t)}
                 className={`px-3 py-1 rounded-full text-sm ${tab === t ? 'bg-gray-800 text-white' : 'bg-gray-100'}`}>
-                {t === 'transactions' ? 'Transactions' : t === 'budget' ? 'Budget' : 'Import CSV'}
+                {t === 'transactions' ? 'Transactions' : t === 'budget' ? 'Budget' : t === 'import' ? 'Import CSV' : 'Soldes'}
               </button>
             ))}
             <button onClick={() => supabase.auth.signOut()}
@@ -77,6 +78,7 @@ function App() {
           {tab === 'transactions' && <TransactionList />}
           {tab === 'budget' && <BudgetConfig />}
           {tab === 'import' && <ImportCSV />}
+          {tab === 'soldes' && <Soldes />}
         </div>
       )
     }
