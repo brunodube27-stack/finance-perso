@@ -11,6 +11,7 @@ import NetWorth from './pages/NetWorth'
 import Metaux from './pages/Metaux'
 import ImportCSV from './pages/ImportCSV'
 import Soldes from './pages/Soldes'
+import ManageComptes from './pages/ManageComptes'
 
 const IconDashboard = () => (
   <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -43,7 +44,7 @@ const IconMore = () => (
 
 const SUB_LABELS = {
   epargne: 'Épargne', networth: 'Net Worth', metaux: 'Métaux',
-  transactions: 'Transactions', budget: 'Budget', import: 'Import CSV', soldes: 'Soldes',
+  transactions: 'Transactions', budget: 'Budget', import: 'Import CSV', soldes: 'Soldes', comptes: 'Comptes',
 }
 
 function SubTabs({ tabs, active, onSelect, color = 'indigo' }) {
@@ -114,7 +115,7 @@ function App() {
         <div>
           <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
             <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 bg-white" style={{ minWidth: 'max-content' }}>
-              {['transactions', 'budget', 'import', 'soldes'].map(t => (
+              {['transactions', 'budget', 'import', 'soldes', 'comptes'].map(t => (
                 <button key={t} onClick={() => setSubPage(t)}
                   className={`px-3.5 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${tab === t ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
                   {SUB_LABELS[t]}
@@ -130,6 +131,7 @@ function App() {
           {tab === 'budget' && <BudgetConfig />}
           {tab === 'import' && <ImportCSV />}
           {tab === 'soldes' && <Soldes />}
+          {tab === 'comptes' && <ManageComptes />}
         </div>
       )
     }
