@@ -14,8 +14,10 @@ export default function TransactionList() {
   useEffect(() => {
     async function fetch() {
       setLoading(true)
-      const from = `${year}-${String(month).padStart(2, '0')}-01`
-      const to = `${year}-${String(month).padStart(2, '0')}-31`
+      const mm = String(month).padStart(2, '0')
+      const lastDay = new Date(year, month, 0).getDate()
+      const from = `${year}-${mm}-01`
+      const to = `${year}-${mm}-${lastDay}`
 
       const { data, error } = await supabase
         .from('transactions')
