@@ -44,7 +44,7 @@ export default function Soldes() {
 
       const map = {}
       existing?.forEach(e => {
-        map[e.account_id] = { balance: e.balance ?? '', note: e.note || '' }
+        map[e.account_id] = { balance: e.balance ?? '', note: e.note || '', rowId: e.id }
       })
 
       if (accs) {
@@ -63,7 +63,7 @@ export default function Soldes() {
 
         accs.forEach(a => {
           if (!map[a.id]) {
-            map[a.id] = { balance: prevMap[a.id] ?? '', note: '' }
+            map[a.id] = { balance: prevMap[a.id] ?? '', note: '', rowId: null }
           }
         })
       }
@@ -111,41 +111,48 @@ export default function Soldes() {
     setSaving(true)
     setStatus(null)
 
-    const rows = Object.entries(balances)
+    const entries = Object.entries(balances)
       .filter(([_, e]) => e.balance !== '' && e.balance !== null && e.balance !== undefined)
-      .map(([account_id, e]) => ({
-        account_id,
-        year,
-        month,
+
+    let lastError = null
+    const newIds = {}
+
+    for (const [account_id, e] of entries) {
+      const payload = {
         balance: parseFloat(e.balance) || 0,
         note: e.note || null,
-      }))
+      }
 
-    const { error: delError } = await supabase
-      .from('account_balances')
-      .delete()
-      .eq('year', year)
-      .eq('month', month)
-
-    if (delError) {
-      console.error('delete error', delError)
-      setSaving(false)
-      setStatus('error')
-      return
+      if (e.rowId) {
+        const { error } = await supabase
+          .from('account_balances')
+          .update(payload)
+          .eq('id', e.rowId)
+        if (error) { lastError = error; console.error('update error', error) }
+      } else {
+        const { data, error } = await supabase
+          .from('account_balances')
+          .insert({ ...payload, account_id, year, month })
+          .select('id')
+          .single()
+        if (error) { lastError = error; console.error('insert error', error) }
+        else if (data) newIds[account_id] = data.id
+      }
     }
 
-    if (rows.length === 0) {
-      setSaving(false)
-      setStatus('success')
-      return
+    if (Object.keys(newIds).length > 0) {
+      setBalances(prev => {
+        const next = { ...prev }
+        for (const [aid, rid] of Object.entries(newIds)) {
+          next[aid] = { ...next[aid], rowId: rid }
+        }
+        return next
+      })
     }
-
-    const { error } = await supabase.from('account_balances').insert(rows)
 
     setSaving(false)
-    if (error) {
+    if (lastError) {
       setStatus('error')
-      console.error('insert error', error)
     } else {
       setStatus('success')
       if (showHistory) setShowHistory(false)
