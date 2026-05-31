@@ -23,13 +23,8 @@ export default function Soldes() {
     let cancelled = false
 
     async function fetchData() {
-      const cols = ['id','account_id','balance','note','date','period','balance_date','record_date','year','month','user_id','created_at','updated_at']
-      const colResults = {}
-      for (const col of cols) {
-        const { error } = await supabase.from('account_balances').select(col).limit(1)
-        colResults[col] = !error
-      }
-      console.log('account_balances existing columns:', Object.entries(colResults).filter(([,v])=>v).map(([k])=>k))
+      const mm = String(month).padStart(2, '0')
+      const dateKey = `${year}-${mm}-01`
 
       const { data: accs } = await supabase
         .from('accounts')
@@ -45,24 +40,24 @@ export default function Soldes() {
       const { data: existing } = await supabase
         .from('account_balances')
         .select('*')
-        .eq('year', year)
-        .eq('month', month)
+        .eq('date', dateKey)
 
       if (cancelled) return
 
       const map = {}
       existing?.forEach(e => {
-        map[e.account_id] = { balance: e.balance ?? '', note: e.note || '', rowId: e.id }
+        map[e.account_id] = { balance: e.balance ?? '', rowId: e.id }
       })
 
       if (accs) {
         const prevMonth = month === 1 ? 12 : month - 1
         const prevYear = month === 1 ? year - 1 : year
+        const prevMm = String(prevMonth).padStart(2, '0')
+        const prevDateKey = `${prevYear}-${prevMm}-01`
         const { data: prev } = await supabase
           .from('account_balances')
           .select('*')
-          .eq('year', prevYear)
-          .eq('month', prevMonth)
+          .eq('date', prevDateKey)
 
         if (cancelled) return
 
@@ -71,7 +66,7 @@ export default function Soldes() {
 
         accs.forEach(a => {
           if (!map[a.id]) {
-            map[a.id] = { balance: prevMap[a.id] ?? '', note: '', rowId: null }
+            map[a.id] = { balance: prevMap[a.id] ?? '', rowId: null }
           }
         })
       }
@@ -88,17 +83,16 @@ export default function Soldes() {
     async function fetchHistory() {
       const { data } = await supabase
         .from('account_balances')
-        .select('year, month, balance')
-        .order('year', { ascending: false })
-        .order('month', { ascending: false })
-        .limit(120)
+        .select('date, balance')
+        .order('date', { ascending: false })
+        .limit(240)
 
       if (!data) return
 
       const byPeriod = {}
       data.forEach(r => {
-        const key = `${r.year}-${String(r.month).padStart(2, '0')}`
-        byPeriod[key] = (byPeriod[key] || 0) + parseFloat(r.balance || 0)
+        const key = r.date?.slice(0, 7)
+        if (key) byPeriod[key] = (byPeriod[key] || 0) + parseFloat(r.balance || 0)
       })
 
       const sorted = Object.entries(byPeriod)
@@ -125,22 +119,23 @@ export default function Soldes() {
     let lastError = null
     const newIds = {}
 
+    const mm = String(month).padStart(2, '0')
+    const dateKey = `${year}-${mm}-01`
+    const { data: { user } } = await supabase.auth.getUser()
+
     for (const [account_id, e] of entries) {
-      const payload = {
-        balance: parseFloat(e.balance) || 0,
-        note: e.note || null,
-      }
+      const balanceVal = parseFloat(e.balance) || 0
 
       if (e.rowId) {
         const { error } = await supabase
           .from('account_balances')
-          .update(payload)
+          .update({ balance: balanceVal })
           .eq('id', e.rowId)
         if (error) { lastError = error; console.error('update error', error) }
       } else {
         const { data, error } = await supabase
           .from('account_balances')
-          .insert({ ...payload, account_id, year, month })
+          .insert({ account_id, date: dateKey, balance: balanceVal, user_id: user?.id })
           .select('id')
           .single()
         if (error) { lastError = error; console.error('insert error', error) }
@@ -289,8 +284,7 @@ function BalanceSection({ title, accounts, balances, onChange }) {
               <p className="font-semibold text-sm text-slate-800">{a.name}</p>
               {a.type && <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{a.type}</span>}
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
+            <div>
                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5 block">Solde ($)</label>
                 <input
                   type="number"
@@ -300,17 +294,6 @@ function BalanceSection({ title, accounts, balances, onChange }) {
                   placeholder="0.00"
                   className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:border-indigo-400 text-right"
                 />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5 block">Note</label>
-                <input
-                  type="text"
-                  value={balances[a.id]?.note || ''}
-                  onChange={e => onChange(a.id, 'note', e.target.value)}
-                  placeholder="Optionnel..."
-                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:border-indigo-400"
-                />
-              </div>
             </div>
           </div>
         ))}
