@@ -23,9 +23,13 @@ export default function Soldes() {
     let cancelled = false
 
     async function fetchData() {
-      const { data: dbgRow, error: dbgErr } = await supabase
-        .from('account_balances').select('*').limit(1)
-      console.log('account_balances columns:', dbgRow ? Object.keys(dbgRow[0] || {}) : dbgErr)
+      const cols = ['id','account_id','balance','note','date','period','balance_date','record_date','year','month','user_id','created_at','updated_at']
+      const colResults = {}
+      for (const col of cols) {
+        const { error } = await supabase.from('account_balances').select(col).limit(1)
+        colResults[col] = !error
+      }
+      console.log('account_balances existing columns:', Object.entries(colResults).filter(([,v])=>v).map(([k])=>k))
 
       const { data: accs } = await supabase
         .from('accounts')
