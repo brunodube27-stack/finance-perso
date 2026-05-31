@@ -55,13 +55,11 @@ export default function ManageComptes() {
     if (!addForm.name.trim()) return
     setSaving(true)
     setStatus(null)
-    const { data: { user } } = await supabase.auth.getUser()
     const { error } = await supabase.from('accounts').insert({
       name: addForm.name.trim(),
       type: addForm.type,
       block: addForm.block,
       is_active: addForm.is_active,
-      user_id: user.id,
     })
     if (error) { setStatus('error') } else {
       setStatus('success')
