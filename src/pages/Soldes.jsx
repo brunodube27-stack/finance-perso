@@ -138,61 +138,47 @@ export default function Soldes() {
   const netTotal = totalAssets - totalDebts
 
   return (
-    <div className="max-w-md mx-auto p-4 pb-32">
-      <h1 className="text-2xl font-bold mb-4">Soldes des comptes</h1>
+    <div className="max-w-md mx-auto px-4 pt-4 pb-36">
+      <h1 className="text-xl font-bold text-slate-800 mb-4">Soldes des comptes</h1>
 
       <div className="flex gap-2 mb-4">
         <select value={month} onChange={e => { setMonth(Number(e.target.value)); setStatus(null) }}
-          className="border rounded-lg p-2 flex-1">
+          className="flex-1 border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-indigo-400">
           {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
             <option key={m} value={m}>{MONTH_NAMES[m - 1]}</option>
           ))}
         </select>
         <select value={year} onChange={e => { setYear(Number(e.target.value)); setStatus(null) }}
-          className="border rounded-lg p-2">
+          className="border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-indigo-400">
           {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '20px' }}>
+      <div className="grid grid-cols-3 gap-2 mb-5">
         <SummaryCard label="Actifs" amount={totalAssets} color="#15803d" bg="#f0fdf4" />
         <SummaryCard label="Dettes" amount={totalDebts} color="#b91c1c" bg="#fef2f2" />
-        <SummaryCard label="Net" amount={netTotal} color={netTotal >= 0 ? '#1d4ed8' : '#b91c1c'} bg={netTotal >= 0 ? '#eff6ff' : '#fef2f2'} />
+        <SummaryCard label="Net" amount={netTotal}
+          color={netTotal >= 0 ? '#1d4ed8' : '#b91c1c'}
+          bg={netTotal >= 0 ? '#eff6ff' : '#fef2f2'} />
       </div>
 
-      <AccountSection
-        title="💳 Dépenses"
-        accounts={spendingAccounts}
-        balances={balances}
-        onChange={handleChange}
-      />
-      <AccountSection
-        title="💰 Épargne"
-        accounts={savingsAccounts}
-        balances={balances}
-        onChange={handleChange}
-      />
-      <AccountSection
-        title="🏦 Retraite"
-        accounts={retirementAccounts}
-        balances={balances}
-        onChange={handleChange}
-      />
+      <BalanceSection title="💳 Dépenses" accounts={spendingAccounts} balances={balances} onChange={handleChange} />
+      <BalanceSection title="💰 Épargne" accounts={savingsAccounts} balances={balances} onChange={handleChange} />
+      <BalanceSection title="🏦 Retraite" accounts={retirementAccounts} balances={balances} onChange={handleChange} />
 
       <button
         onClick={() => setShowHistory(v => !v)}
-        className="w-full text-sm text-gray-500 border border-dashed rounded-lg p-3 mb-4 text-left"
-      >
+        className="w-full text-sm text-slate-400 border border-dashed border-slate-300 rounded-xl p-3 mb-4 text-left hover:bg-slate-50 transition-colors">
         {showHistory ? '▲ Masquer l\'historique' : '▼ Afficher l\'historique (12 mois)'}
       </button>
 
       {showHistory && (
-        <div className="border rounded-lg overflow-hidden mb-4">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden mb-4">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead className="bg-slate-50 border-b border-slate-100">
               <tr>
-                <th className="text-left p-3 font-medium text-gray-600">Période</th>
-                <th className="text-right p-3 font-medium text-gray-600">Total</th>
+                <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Période</th>
+                <th className="text-right px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Total</th>
               </tr>
             </thead>
             <tbody>
@@ -201,29 +187,32 @@ export default function Soldes() {
                 const label = `${MONTH_NAMES[parseInt(m) - 1]} ${y}`
                 const isCurrent = parseInt(y) === year && parseInt(m) === month
                 return (
-                  <tr key={key} className={isCurrent ? 'bg-blue-50' : 'border-t'}>
-                    <td className="p-3 text-gray-700">{label}{isCurrent ? ' ●' : ''}</td>
-                    <td className="p-3 text-right font-medium text-gray-800">
+                  <tr key={key} className={`border-t border-slate-50 ${isCurrent ? 'bg-indigo-50' : ''}`}>
+                    <td className="px-4 py-2.5 text-sm text-slate-700">
+                      {label}
+                      {isCurrent && <span className="ml-2 text-indigo-500 text-xs font-semibold">●</span>}
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-semibold text-slate-800">
                       {total.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}
                     </td>
                   </tr>
                 )
               })}
               {history.length === 0 && (
-                <tr><td colSpan={2} className="p-3 text-center text-gray-400">Aucun historique</td></tr>
+                <tr><td colSpan={2} className="px-4 py-4 text-center text-slate-400 text-sm">Aucun historique</td></tr>
               )}
             </tbody>
           </table>
         </div>
       )}
 
-      <div className="fixed bottom-16 left-0 right-0 p-4 bg-white border-t">
+      <div className="fixed bottom-[72px] left-0 right-0 px-4 py-3 bg-white border-t border-slate-100">
         <button onClick={handleSave} disabled={saving}
-          className="w-full bg-blue-600 text-white rounded-lg p-4 font-semibold">
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-3.5 font-semibold text-sm transition-colors">
           {saving ? 'Enregistrement...' : 'Sauvegarder'}
         </button>
-        {status === 'success' && <p className="text-green-600 text-center mt-2">✅ Sauvegardé</p>}
-        {status === 'error' && <p className="text-red-600 text-center mt-2">❌ Erreur — voir console</p>}
+        {status === 'success' && <p className="text-emerald-600 text-center text-sm mt-2">✓ Sauvegardé</p>}
+        {status === 'error' && <p className="text-red-500 text-center text-sm mt-2">Erreur — voir console</p>}
       </div>
     </div>
   )
@@ -231,54 +220,53 @@ export default function Soldes() {
 
 function SummaryCard({ label, amount, color, bg }) {
   return (
-    <div style={{ background: bg, borderRadius: '8px', padding: '10px', textAlign: 'center' }}>
-      <p style={{ fontSize: '11px', color, marginBottom: '2px', fontWeight: '500' }}>{label}</p>
-      <p style={{ fontSize: '13px', fontWeight: 'bold', color }}>
+    <div style={{ background: bg, borderRadius: '16px', padding: '10px', textAlign: 'center', border: `1px solid ${color}22` }}>
+      <p style={{ fontSize: '10px', color, marginBottom: '3px', fontWeight: '600', letterSpacing: '0.03em' }}>{label}</p>
+      <p style={{ fontSize: '13px', fontWeight: '700', color, lineHeight: 1.2 }}>
         {amount.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}
       </p>
     </div>
   )
 }
 
-function AccountSection({ title, accounts, balances, onChange }) {
+function BalanceSection({ title, accounts, balances, onChange }) {
   if (accounts.length === 0) return null
 
   const total = accounts.reduce((s, a) => s + (parseFloat(balances[a.id]?.balance) || 0), 0)
 
   return (
-    <div className="mb-6">
+    <div className="mb-5">
       <div className="flex justify-between items-center mb-2">
-        <h2 className="font-semibold text-gray-700">{title}</h2>
-        <span className="text-sm text-gray-500">
-          {total.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}
-        </span>
+        <h2 className="text-sm font-semibold text-slate-600">{title}</h2>
+        <span className="text-xs text-slate-400">{total.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</span>
       </div>
       <div className="flex flex-col gap-3">
         {accounts.map(a => (
-          <div key={a.id} className="border rounded-lg p-3">
-            <p className="font-medium text-sm mb-2">{a.name}
-              {a.type && <span className="ml-2 text-xs text-gray-400 font-normal">{a.type}</span>}
-            </p>
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <label className="text-xs text-gray-500 mb-1 block">Solde ($)</label>
+          <div key={a.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <p className="font-semibold text-sm text-slate-800">{a.name}</p>
+              {a.type && <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{a.type}</span>}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5 block">Solde ($)</label>
                 <input
                   type="number"
                   step="0.01"
                   value={balances[a.id]?.balance ?? ''}
                   onChange={e => onChange(a.id, 'balance', e.target.value)}
                   placeholder="0.00"
-                  className="w-full border rounded p-2 text-sm text-right"
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:border-indigo-400 text-right"
                 />
               </div>
-              <div className="flex-1">
-                <label className="text-xs text-gray-500 mb-1 block">Note (optionnel)</label>
+              <div>
+                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5 block">Note</label>
                 <input
                   type="text"
                   value={balances[a.id]?.note || ''}
                   onChange={e => onChange(a.id, 'note', e.target.value)}
-                  placeholder="Note..."
-                  className="w-full border rounded p-2 text-sm"
+                  placeholder="Optionnel..."
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:border-indigo-400"
                 />
               </div>
             </div>

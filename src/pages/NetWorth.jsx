@@ -81,107 +81,102 @@ export default function NetWorth() {
   const totalAccounting = Object.values(accounting).reduce((s, v) => s + parseFloat(v || 0), 0)
   const totalReal = Object.values(snapshots).reduce((s, v) => s + parseFloat(v.balance_real || 0), 0)
 
-  if (loading) return <div style={{ padding: '24px' }}>Chargement...</div>
+  if (loading) return (
+    <div className="flex items-center justify-center pt-20">
+      <div className="text-slate-400 text-sm">Chargement...</div>
+    </div>
+  )
+
+  const inputCls = "w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-indigo-400"
+  const rendement = totalReal - totalAccounting
 
   return (
-    <div style={{ maxWidth: '480px', margin: '0 auto', padding: '16px', paddingBottom: '96px' }}>
-      <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>Valeur nette</h1>
+    <div className="max-w-md mx-auto px-4 pt-4 pb-28">
+      <h1 className="text-xl font-bold text-slate-800 mb-4">Valeur nette</h1>
 
-      {/* Totaux */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '24px' }}>
-        <div style={{ background: '#f0fdf4', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
-          <p style={{ fontSize: '11px', color: '#15803d', marginBottom: '4px' }}>Valeur comptable</p>
-          <p style={{ fontWeight: 'bold', color: '#15803d' }}>{totalAccounting.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</p>
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-3 text-center">
+          <p className="text-xs font-semibold text-emerald-600 mb-1">Comptable</p>
+          <p className="font-bold text-emerald-700 text-sm">{totalAccounting.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</p>
         </div>
-        <div style={{ background: '#eff6ff', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
-          <p style={{ fontSize: '11px', color: '#1d4ed8', marginBottom: '4px' }}>Valeur réelle</p>
-          <p style={{ fontWeight: 'bold', color: '#1d4ed8' }}>{totalReal.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</p>
+        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-3 text-center">
+          <p className="text-xs font-semibold text-blue-600 mb-1">Réel</p>
+          <p className="font-bold text-blue-700 text-sm">{totalReal.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</p>
+        </div>
+        <div className={`${rendement >= 0 ? 'bg-emerald-50 border-emerald-100' : 'bg-red-50 border-red-100'} border rounded-2xl p-3 text-center`}>
+          <p className={`text-xs font-semibold mb-1 ${rendement >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>Rendement</p>
+          <p className={`font-bold text-sm ${rendement >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>{rendement.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</p>
         </div>
       </div>
 
-      {/* Rendement global */}
-      <div style={{ background: '#f3f4f6', borderRadius: '8px', padding: '12px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: '14px', color: '#6b7280' }}>Rendement total</span>
-        <span style={{ fontWeight: 'bold', color: totalReal - totalAccounting >= 0 ? '#16a34a' : '#dc2626' }}>
-          {(totalReal - totalAccounting).toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}
-        </span>
-      </div>
+      <NWSection title="💰 Épargne" accounts={savingsAccounts} snapshots={snapshots} accounting={accounting} />
+      <NWSection title="🏦 Retraite" accounts={retirementAccounts} snapshots={snapshots} accounting={accounting} />
+      <NWSection title="💳 Dépenses" accounts={spendingAccounts} snapshots={snapshots} accounting={accounting} />
 
-      {/* Comptes épargne */}
-      <AccountSection title="💰 Épargne" accounts={savingsAccounts} snapshots={snapshots} accounting={accounting} />
-      <AccountSection title="🏦 Retraite" accounts={retirementAccounts} snapshots={snapshots} accounting={accounting} />
-      <AccountSection title="🏦 Dépenses" accounts={spendingAccounts} snapshots={snapshots} accounting={accounting} />
-
-      {/* Formulaire nouveau snapshot */}
-      <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '16px', marginTop: '24px' }}>
-        <h2 style={{ fontWeight: 'bold', marginBottom: '12px' }}>📸 Nouveau snapshot</h2>
-        <form onSubmit={handleSaveSnapshot} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 mt-4">
+        <h2 className="text-sm font-semibold text-slate-700 mb-3">📸 Nouveau snapshot</h2>
+        <form onSubmit={handleSaveSnapshot} className="flex flex-col gap-3">
           <select value={form.account_id} onChange={e => setForm(p => ({ ...p, account_id: e.target.value }))}
-            style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px' }} required>
+            className={inputCls} required>
             <option value="">Sélectionner un compte</option>
-            {accounts.map(a => (
-              <option key={a.id} value={a.id}>{a.name}</option>
-            ))}
+            {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
-          <input type="date" value={form.date}
-            onChange={e => setForm(p => ({ ...p, date: e.target.value }))}
-            style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px' }} required />
-          <input type="number" step="0.01" placeholder="Valeur réelle ($)"
-            value={form.balance_real}
-            onChange={e => setForm(p => ({ ...p, balance_real: e.target.value }))}
-            style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px' }} required />
+          <div className="grid grid-cols-2 gap-2">
+            <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))}
+              className={inputCls} required />
+            <input type="number" step="0.01" placeholder="Valeur réelle ($)"
+              value={form.balance_real} onChange={e => setForm(p => ({ ...p, balance_real: e.target.value }))}
+              className={`${inputCls} text-right`} required />
+          </div>
           <input type="text" placeholder="Note (ex: Relevé Q1 Questrade)"
-            value={form.note}
-            onChange={e => setForm(p => ({ ...p, note: e.target.value }))}
-            style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px' }} />
+            value={form.note} onChange={e => setForm(p => ({ ...p, note: e.target.value }))}
+            className={inputCls} />
           <button type="submit" disabled={saving}
-            style={{ background: '#1d4ed8', color: 'white', borderRadius: '8px', padding: '12px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-3 font-semibold text-sm transition-colors">
             {saving ? 'Enregistrement...' : 'Sauvegarder snapshot'}
           </button>
-          {status === 'success' && <p style={{ color: '#16a34a', textAlign: 'center' }}>✅ Snapshot enregistré</p>}
-          {status === 'error' && <p style={{ color: '#dc2626', textAlign: 'center' }}>❌ Erreur</p>}
+          {status === 'success' && <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2 text-sm text-emerald-700 text-center">✓ Snapshot enregistré</div>}
+          {status === 'error' && <div className="bg-red-50 border border-red-100 rounded-xl px-3 py-2 text-sm text-red-600 text-center">Erreur</div>}
         </form>
       </div>
     </div>
   )
 }
 
-function AccountSection({ title, accounts, snapshots, accounting }) {
+function NWSection({ title, accounts, snapshots, accounting }) {
   if (accounts.length === 0) return null
   return (
-    <div style={{ marginBottom: '24px' }}>
-      <h2 style={{ fontWeight: 'bold', color: '#374151', marginBottom: '8px' }}>{title}</h2>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <div className="mb-4">
+      <h2 className="text-sm font-semibold text-slate-600 mb-2">{title}</h2>
+      <div className="flex flex-col gap-2">
         {accounts.map(a => {
           const snap = snapshots[a.id]
           const acc = parseFloat(accounting[a.id] || 0)
           const real = parseFloat(snap?.balance_real || 0)
           const diff = real - acc
           return (
-            <div key={a.id} style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <span style={{ fontWeight: '500' }}>{a.name}</span>
-                {snap && (
-                  <span style={{ fontSize: '12px', color: '#9ca3af' }}>{snap.date}</span>
-                )}
+            <div key={a.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm px-4 py-3">
+              <div className="flex justify-between items-center mb-2">
+                <span className="font-semibold text-sm text-slate-800">{a.name}</span>
+                {snap && <span className="text-xs text-slate-400">{snap.date}</span>}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', fontSize: '13px' }}>
+              <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <p style={{ color: '#9ca3af', fontSize: '11px' }}>Comptable</p>
-                  <p style={{ fontWeight: '500' }}>{acc.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</p>
+                  <p className="text-xs text-slate-400 mb-0.5">Comptable</p>
+                  <p className="text-sm font-semibold text-slate-700">{acc.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</p>
                 </div>
                 <div>
-                  <p style={{ color: '#9ca3af', fontSize: '11px' }}>Réel</p>
-                  <p style={{ fontWeight: '500' }}>{snap ? real.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' }) : '—'}</p>
+                  <p className="text-xs text-slate-400 mb-0.5">Réel</p>
+                  <p className="text-sm font-semibold text-slate-700">{snap ? real.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' }) : '—'}</p>
                 </div>
                 <div>
-                  <p style={{ color: '#9ca3af', fontSize: '11px' }}>Rendement</p>
-                  <p style={{ fontWeight: '500', color: diff >= 0 ? '#16a34a' : '#dc2626' }}>
+                  <p className="text-xs text-slate-400 mb-0.5">Rendement</p>
+                  <p className={`text-sm font-semibold ${diff >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                     {snap ? diff.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' }) : '—'}
                   </p>
                 </div>
               </div>
-              {snap?.note && <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>{snap.note}</p>}
+              {snap?.note && <p className="text-xs text-slate-400 mt-2">{snap.note}</p>}
             </div>
           )
         })}

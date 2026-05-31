@@ -110,96 +110,74 @@ export default function SavingsTracking() {
   const retirementAccounts = accounts.filter(a => a.block === 'retirement')
 
   return (
-    <div className="max-w-md mx-auto p-4 pb-32">
-      <h1 className="text-2xl font-bold mb-4">Comptes d'épargne</h1>
+    <div className="max-w-md mx-auto px-4 pt-4 pb-36">
+      <h1 className="text-xl font-bold text-slate-800 mb-4">Comptes d'épargne</h1>
 
-      {/* Sélecteur mois/année */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-5">
         <select value={month} onChange={e => setMonth(Number(e.target.value))}
-          className="border rounded-lg p-2 flex-1">
+          className="flex-1 border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-indigo-400">
           {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
-            <option key={m} value={m}>
-              {new Date(2000, m - 1).toLocaleString('fr-CA', { month: 'long' })}
-            </option>
+            <option key={m} value={m}>{new Date(2000, m - 1).toLocaleString('fr-CA', { month: 'long' })}</option>
           ))}
         </select>
         <select value={year} onChange={e => setYear(Number(e.target.value))}
-          className="border rounded-lg p-2">
-          {[2025, 2026, 2027].map(y => (
-            <option key={y} value={y}>{y}</option>
-          ))}
+          className="border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-indigo-400">
+          {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
 
-      {/* Épargne */}
-      <AccountSection
-        title="💰 Épargne (35%)"
-        accounts={savingsAccounts}
-        entries={entries}
-        onChange={handleChange}
-      />
+      <SavingsSection title="💰 Épargne (35%)" accounts={savingsAccounts} entries={entries} onChange={handleChange} />
+      <SavingsSection title="🏦 Retraite (10%)" accounts={retirementAccounts} entries={entries} onChange={handleChange} />
 
-      {/* Retraite */}
-      <AccountSection
-        title="🏦 Retraite (10%)"
-        accounts={retirementAccounts}
-        entries={entries}
-        onChange={handleChange}
-      />
-
-      {/* Bouton save */}
-      <div className="fixed bottom-16 left-0 right-0 p-4 bg-white border-t">
+      <div className="fixed bottom-[72px] left-0 right-0 px-4 py-3 bg-white border-t border-slate-100">
         <button onClick={handleSave} disabled={saving}
-          className="w-full bg-blue-600 text-white rounded-lg p-4 font-semibold">
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-3.5 font-semibold text-sm transition-colors">
           {saving ? 'Enregistrement...' : 'Sauvegarder'}
         </button>
-        {status === 'success' && <p className="text-green-600 text-center mt-2">✅ Sauvegardé</p>}
-        {status === 'error' && <p className="text-red-600 text-center mt-2">❌ Erreur — voir console</p>}
+        {status === 'success' && <p className="text-emerald-600 text-center text-sm mt-2">✓ Sauvegardé</p>}
+        {status === 'error' && <p className="text-red-500 text-center text-sm mt-2">Erreur — voir console</p>}
       </div>
     </div>
   )
 }
 
-function AccountSection({ title, accounts, entries, onChange }) {
-  const total = accounts.reduce((sum, a) => {
-    return sum + (parseFloat(entries[a.id]?.balance_accounting) || 0)
-  }, 0)
+function SavingsSection({ title, accounts, entries, onChange }) {
+  const total = accounts.reduce((sum, a) => sum + (parseFloat(entries[a.id]?.balance_accounting) || 0), 0)
+  if (accounts.length === 0) return null
 
   return (
-    <div className="mb-6">
+    <div className="mb-5">
       <div className="flex justify-between items-center mb-2">
-        <h2 className="font-semibold text-gray-700">{title}</h2>
-        <span className="text-sm text-gray-500">
-          {total.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}
-        </span>
+        <h2 className="text-sm font-semibold text-slate-600">{title}</h2>
+        <span className="text-xs text-slate-400">{total.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</span>
       </div>
       <div className="flex flex-col gap-3">
         {accounts.map(a => (
-          <div key={a.id} className="border rounded-lg p-3">
-            <p className="font-medium text-sm mb-2">{a.name}</p>
-            <div className="flex gap-2 mb-2">
-              <div className="flex-1">
-                <label className="text-xs text-gray-500 mb-1 block">Dépôt ce mois ($)</label>
+          <div key={a.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+            <p className="font-semibold text-sm text-slate-800 mb-3">{a.name}</p>
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              <div>
+                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5 block">Dépôt ce mois ($)</label>
                 <input type="number" step="0.01"
                   value={entries[a.id]?.amount_deposited || ''}
                   onChange={e => onChange(a.id, 'amount_deposited', e.target.value)}
                   placeholder="0.00"
-                  className="w-full border rounded p-2 text-sm text-right" />
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:border-indigo-400 text-right" />
               </div>
-              <div className="flex-1">
-                <label className="text-xs text-gray-500 mb-1 block">Solde comptable ($)</label>
+              <div>
+                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5 block">Solde comptable ($)</label>
                 <input type="number" step="0.01"
                   value={entries[a.id]?.balance_accounting || ''}
                   onChange={e => onChange(a.id, 'balance_accounting', e.target.value)}
                   placeholder="0.00"
-                  className="w-full border rounded p-2 text-sm text-right" />
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:border-indigo-400 text-right" />
               </div>
             </div>
             <input type="text"
               value={entries[a.id]?.note || ''}
               onChange={e => onChange(a.id, 'note', e.target.value)}
               placeholder="Note (optionnel)"
-              className="w-full border rounded p-2 text-xs" />
+              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:border-indigo-400" />
           </div>
         ))}
       </div>

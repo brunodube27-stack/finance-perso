@@ -129,146 +129,151 @@ export default function AddIncome() {
     }
   }
 
-  return (
-    <div className="max-w-md mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Nouveau revenu</h1>
+  const inputCls = "w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-indigo-400"
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-6">
+  return (
+    <div className="max-w-md mx-auto px-4 pt-4 pb-28">
+      <h1 className="text-xl font-bold text-slate-800 mb-4">Nouveau revenu</h1>
+
+      <div className="flex gap-2 mb-4">
         {[['unique', 'Revenu unique'], ['etale', 'Revenu étalé']].map(([key, label]) => (
           <button key={key} onClick={() => { setActiveTab(key); setStatus(null) }}
-            className={`px-4 py-2 rounded-full text-sm font-medium ${activeTab === key ? 'bg-green-600 text-white' : 'bg-gray-100'}`}>
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTab === key ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
             {label}
           </button>
         ))}
       </div>
 
-      {/* Revenu unique */}
-      {activeTab === 'unique' && (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Date</label>
-            <input type="date" name="date" value={form.date} onChange={handleChange}
-              className="w-full border rounded-lg p-3" required />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Montant net reçu ($)</label>
-            <input type="number" name="amount" value={form.amount} onChange={handleChange}
-              placeholder="0.00" step="0.01" min="0" className="w-full border rounded-lg p-3" required />
-          </div>
-          {preview && (
-            <div className="bg-blue-50 rounded-lg p-4 flex flex-col gap-1">
-              <p className="text-sm font-semibold text-blue-800 mb-1">Répartition automatique</p>
-              <div className="flex justify-between text-sm"><span>🏦 Retraite ({split.retirement}%)</span><span className="font-medium">{preview.retirement} $</span></div>
-              <div className="flex justify-between text-sm"><span>💰 Épargne ({split.savings}%)</span><span className="font-medium">{preview.savings} $</span></div>
-              <div className="flex justify-between text-sm"><span>🛒 Dépenses ({split.spending}%)</span><span className="font-medium">{preview.spending} $</span></div>
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+        {activeTab === 'unique' && (
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Date</label>
+                <input type="date" name="date" value={form.date} onChange={handleChange} className={inputCls} required />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Montant net ($)</label>
+                <input type="number" name="amount" value={form.amount} onChange={handleChange}
+                  placeholder="0.00" step="0.01" min="0" className={`${inputCls} text-right`} required />
+              </div>
             </div>
-          )}
-          <div>
-            <label className="block text-sm font-medium mb-1">Type</label>
-            <select name="type" value={form.type} onChange={handleChange} className="w-full border rounded-lg p-3">
-              <option value="fixed">Fixe (chômage, indemnité)</option>
-              <option value="variable">Variable (consultation)</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Source</label>
-            <input type="text" name="source" value={form.source} onChange={handleChange}
-              placeholder="Ex: Chômage, Consultation XYZ" className="w-full border rounded-lg p-3" required />
-          </div>
-          <div className="border-t pt-4">
-            <p className="text-sm font-semibold text-gray-600 mb-2">Contribution employeur (optionnel)</p>
-            <div className="flex flex-col gap-2">
-              <input type="number" name="employer_contribution" value={form.employer_contribution}
-                onChange={handleChange} placeholder="Montant ($)" step="0.01" min="0" className="w-full border rounded-lg p-3" />
-              <input type="text" name="employer_contribution_note" value={form.employer_contribution_note}
-                onChange={handleChange} placeholder="Ex: Match REER VIA 7%" className="w-full border rounded-lg p-3" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Description (optionnel)</label>
-            <input type="text" name="description" value={form.description} onChange={handleChange} className="w-full border rounded-lg p-3" />
-          </div>
-          <button type="submit" className="bg-green-600 text-white rounded-lg p-4 text-lg font-semibold">
-            {status === 'saving' ? 'Enregistrement...' : 'Enregistrer'}
-          </button>
-          {status === 'success' && <p className="text-green-600 text-center">✅ Revenu enregistré</p>}
-          {status === 'error' && <p className="text-red-600 text-center">❌ Erreur — voir console</p>}
-        </form>
-      )}
 
-      {/* Revenu étalé */}
-      {activeTab === 'etale' && (
-        <div className="flex flex-col gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Date de réception</label>
-            <input type="date" name="date" value={etaléForm.date} onChange={handleEtaléChange}
-              className="w-full border rounded-lg p-3" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Montant total reçu ($)</label>
-            <input type="number" name="montant_total" value={etaléForm.montant_total} onChange={handleEtaléChange}
-              placeholder="0.00" step="0.01" min="0" className="w-full border rounded-lg p-3" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Source</label>
-            <input type="text" name="source" value={etaléForm.source} onChange={handleEtaléChange}
-              placeholder="Ex: Indemnité de départ VIA" className="w-full border rounded-lg p-3" />
-          </div>
-          <div className="flex gap-3">
-            <div className="flex-1">
-              <label className="block text-sm font-medium mb-1">Nb de périodes</label>
-              <input type="number" name="nb_periodes" value={etaléForm.nb_periodes} onChange={handleEtaléChange}
-                placeholder="Ex: 26" min="1" className="w-full border rounded-lg p-3" />
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium mb-1">Fréquence</label>
-              <select name="frequence" value={etaléForm.frequence} onChange={handleEtaléChange}
-                className="w-full border rounded-lg p-3">
-                <option value="hebdomadaire">Hebdomadaire</option>
-                <option value="bihebdomadaire">Aux 2 semaines</option>
-                <option value="mensuel">Mensuel</option>
+            {preview && (
+              <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3">
+                <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-2">Répartition automatique</p>
+                <div className="flex flex-col gap-1">
+                  <div className="flex justify-between text-sm"><span className="text-slate-600">🏦 Retraite ({split.retirement}%)</span><span className="font-semibold text-slate-800">{parseFloat(preview.retirement).toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</span></div>
+                  <div className="flex justify-between text-sm"><span className="text-slate-600">💰 Épargne ({split.savings}%)</span><span className="font-semibold text-slate-800">{parseFloat(preview.savings).toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</span></div>
+                  <div className="flex justify-between text-sm"><span className="text-slate-600">🛒 Dépenses ({split.spending}%)</span><span className="font-semibold text-slate-800">{parseFloat(preview.spending).toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</span></div>
+                </div>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Type</label>
+              <select name="type" value={form.type} onChange={handleChange} className={inputCls}>
+                <option value="fixed">Fixe (chômage, indemnité)</option>
+                <option value="variable">Variable (consultation)</option>
               </select>
             </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Description (optionnel)</label>
-            <input type="text" name="description" value={etaléForm.description} onChange={handleEtaléChange}
-              className="w-full border rounded-lg p-3" />
-          </div>
-
-          {/* Aperçu */}
-          {etaléPreview && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex flex-col gap-2">
-              <p className="font-semibold text-yellow-800">Aperçu — {etaléPreview.dates.length} entrées à créer</p>
-              <div className="text-sm flex flex-col gap-1">
-                <div className="flex justify-between"><span>Montant par période</span><span className="font-bold">{etaléPreview.montantParPeriode} $</span></div>
-                <div className="flex justify-between"><span>🏦 Retraite ({split.retirement}%)</span><span>{etaléPreview.retirement} $</span></div>
-                <div className="flex justify-between"><span>💰 Épargne ({split.savings}%)</span><span>{etaléPreview.savings} $</span></div>
-                <div className="flex justify-between"><span>🛒 Dépenses ({split.spending}%)</span><span>{etaléPreview.spending} $</span></div>
-              </div>
-              <div className="border-t pt-2 max-h-40 overflow-y-auto">
-                <p className="text-xs text-gray-500 mb-1">Dates générées :</p>
-                {etaléPreview.dates.map((d, i) => (
-                  <div key={i} className="text-xs text-gray-600 flex justify-between">
-                    <span>Période {i + 1}</span><span>{d}</span>
-                  </div>
-                ))}
-              </div>
-              <label className="flex items-center gap-2 text-sm mt-1">
-                <input type="checkbox" checked={etaléConfirmed} onChange={e => setEtaléConfirmed(e.target.checked)} />
-                Je confirme la création de {etaléPreview.dates.length} entrées de revenu
-              </label>
-              <button onClick={handleEtaléSubmit} disabled={!etaléConfirmed || status === 'saving'}
-                className={`w-full py-3 rounded-xl font-semibold text-white ${etaléConfirmed ? 'bg-green-600' : 'bg-gray-300'}`}>
-                {status === 'saving' ? 'Création en cours...' : 'Créer toutes les entrées'}
-              </button>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Source</label>
+              <input type="text" name="source" value={form.source} onChange={handleChange}
+                placeholder="Ex: Chômage, Consultation XYZ" className={inputCls} required />
             </div>
-          )}
-          {status === 'success' && <p className="text-green-600 text-center">✅ {etaléForm.nb_periodes || ''} entrées créées</p>}
-          {status === 'error' && <p className="text-red-600 text-center">❌ Erreur — voir console</p>}
-        </div>
-      )}
+
+            <div className="border-t border-slate-100 pt-4">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Contribution employeur (optionnel)</p>
+              <div className="flex flex-col gap-2">
+                <input type="number" name="employer_contribution" value={form.employer_contribution}
+                  onChange={handleChange} placeholder="Montant ($)" step="0.01" min="0" className={`${inputCls} text-right`} />
+                <input type="text" name="employer_contribution_note" value={form.employer_contribution_note}
+                  onChange={handleChange} placeholder="Ex: Match REER VIA 7%" className={inputCls} />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Description</label>
+              <input type="text" name="description" value={form.description} onChange={handleChange} className={inputCls} />
+            </div>
+
+            <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-3.5 font-semibold text-sm transition-colors mt-1">
+              {status === 'saving' ? 'Enregistrement...' : 'Enregistrer le revenu'}
+            </button>
+            {status === 'success' && <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2 text-sm text-emerald-700 text-center">✓ Revenu enregistré</div>}
+            {status === 'error' && <div className="bg-red-50 border border-red-100 rounded-xl px-3 py-2 text-sm text-red-600 text-center">Erreur — voir console</div>}
+          </form>
+        )}
+
+        {activeTab === 'etale' && (
+          <div className="flex flex-col gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Date de début</label>
+              <input type="date" name="date" value={etaléForm.date} onChange={handleEtaléChange} className={inputCls} />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Montant total reçu ($)</label>
+              <input type="number" name="montant_total" value={etaléForm.montant_total} onChange={handleEtaléChange}
+                placeholder="0.00" step="0.01" min="0" className={`${inputCls} text-right`} />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Source</label>
+              <input type="text" name="source" value={etaléForm.source} onChange={handleEtaléChange}
+                placeholder="Ex: Indemnité de départ VIA" className={inputCls} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Nb de périodes</label>
+                <input type="number" name="nb_periodes" value={etaléForm.nb_periodes} onChange={handleEtaléChange}
+                  placeholder="26" min="1" className={inputCls} />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Fréquence</label>
+                <select name="frequence" value={etaléForm.frequence} onChange={handleEtaléChange} className={inputCls}>
+                  <option value="hebdomadaire">Hebdomadaire</option>
+                  <option value="bihebdomadaire">Aux 2 semaines</option>
+                  <option value="mensuel">Mensuel</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Description</label>
+              <input type="text" name="description" value={etaléForm.description} onChange={handleEtaléChange} className={inputCls} />
+            </div>
+
+            {etaléPreview && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col gap-3">
+                <p className="font-semibold text-amber-800 text-sm">Aperçu — {etaléPreview.dates.length} entrées à créer</p>
+                <div className="flex flex-col gap-1.5 text-sm">
+                  <div className="flex justify-between"><span className="text-slate-600">Par période</span><span className="font-bold text-slate-800">{parseFloat(etaléPreview.montantParPeriode).toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-600">🏦 Retraite ({split.retirement}%)</span><span className="text-slate-700">{parseFloat(etaléPreview.retirement).toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-600">💰 Épargne ({split.savings}%)</span><span className="text-slate-700">{parseFloat(etaléPreview.savings).toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-600">🛒 Dépenses ({split.spending}%)</span><span className="text-slate-700">{parseFloat(etaléPreview.spending).toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</span></div>
+                </div>
+                <div className="border-t border-amber-200 pt-2 max-h-36 overflow-y-auto">
+                  <p className="text-xs text-amber-700 font-medium mb-1">Dates générées :</p>
+                  {etaléPreview.dates.map((d, i) => (
+                    <div key={i} className="text-xs text-slate-600 flex justify-between py-0.5">
+                      <span>Période {i + 1}</span><span>{d}</span>
+                    </div>
+                  ))}
+                </div>
+                <label className="flex items-center gap-2.5 text-sm cursor-pointer">
+                  <input type="checkbox" checked={etaléConfirmed} onChange={e => setEtaléConfirmed(e.target.checked)} className="w-4 h-4 accent-emerald-600" />
+                  <span className="text-slate-600">Je confirme la création de {etaléPreview.dates.length} entrées</span>
+                </label>
+                <button onClick={handleEtaléSubmit} disabled={!etaléConfirmed || status === 'saving'}
+                  className={`w-full py-3 rounded-xl font-semibold text-sm text-white transition-colors ${etaléConfirmed ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-slate-300 cursor-not-allowed'}`}>
+                  {status === 'saving' ? 'Création en cours...' : 'Créer toutes les entrées'}
+                </button>
+              </div>
+            )}
+            {status === 'success' && <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2 text-sm text-emerald-700 text-center">✓ Entrées créées</div>}
+            {status === 'error' && <div className="bg-red-50 border border-red-100 rounded-xl px-3 py-2 text-sm text-red-600 text-center">Erreur — voir console</div>}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

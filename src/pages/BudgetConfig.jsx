@@ -78,119 +78,109 @@ export default function BudgetConfig() {
     .filter(v => v !== '' && v !== undefined)
     .reduce((sum, v) => sum + parseFloat(v || 0), 0)
 
-  if (loading) return <div className="p-6">Chargement...</div>
+  if (loading) return (
+    <div className="flex items-center justify-center pt-20">
+      <div className="text-slate-400 text-sm">Chargement...</div>
+    </div>
+  )
+
+  const inputCls = "w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-indigo-400"
 
   return (
-    <div className="max-w-md mx-auto p-4 pb-24">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Budget</h1>
+    <div className="max-w-md mx-auto px-4 pt-4 pb-36">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-bold text-slate-800">Budget</h1>
         <select value={year} onChange={e => setYear(Number(e.target.value))}
-          className="border rounded-lg p-2">
-          {[2025, 2026, 2027].map(y => (
-            <option key={y} value={y}>{y}</option>
-          ))}
+          className="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:border-indigo-400">
+          {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
 
-      {/* Total */}
-      <div className="bg-gray-100 rounded-lg p-3 mb-6 flex justify-between">
-        <span className="text-sm text-gray-600">Total annuel</span>
-        <span className="font-bold">{totalAnnual.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</span>
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-4 py-3 mb-4 flex justify-between items-center">
+        <span className="text-sm text-slate-500">Total annuel</span>
+        <span className="font-bold text-slate-800">{totalAnnual.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</span>
       </div>
 
-      {/* Revenu cible */}
-      <div className="mb-6 border rounded-lg p-4 bg-gray-50">
-        <h2 className="font-semibold text-gray-700 mb-3">🎯 Revenu net annuel estimé</h2>
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 mb-5">
+        <h2 className="text-sm font-semibold text-slate-600 mb-3">🎯 Revenu net annuel estimé</h2>
         <div className="flex flex-col gap-3">
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Revenu minimum (dépenses fixes seulement)</label>
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Revenu minimum (dépenses fixes)</label>
             <div className="flex items-center gap-2">
               <input type="number" value={incomeTarget.amount_min}
                 onChange={e => setIncomeTarget(p => ({ ...p, amount_min: e.target.value }))}
-                placeholder="0" className="flex-1 border rounded-lg p-2 text-right text-sm" />
-              <span className="text-xs text-gray-400">$/an</span>
+                placeholder="0" className={`${inputCls} text-right`} />
+              <span className="text-xs text-slate-400 whitespace-nowrap">$/an</span>
             </div>
             {incomeTarget.amount_min && (
-              <p className="text-xs text-gray-500 mt-1">
-                → {(parseFloat(incomeTarget.amount_min) / 12).toFixed(0)} $/mois à facturer
-              </p>
+              <p className="text-xs text-slate-400 mt-1">→ {(parseFloat(incomeTarget.amount_min) / 12).toFixed(0)} $/mois</p>
             )}
           </div>
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Revenu cible (respecter 10/35/55)</label>
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Revenu cible (10/35/55)</label>
             <div className="flex items-center gap-2">
               <input type="number" value={incomeTarget.amount_target}
                 onChange={e => setIncomeTarget(p => ({ ...p, amount_target: e.target.value }))}
-                placeholder="0" className="flex-1 border rounded-lg p-2 text-right text-sm" />
-              <span className="text-xs text-gray-400">$/an</span>
+                placeholder="0" className={`${inputCls} text-right`} />
+              <span className="text-xs text-slate-400 whitespace-nowrap">$/an</span>
             </div>
             {incomeTarget.amount_target && (
-              <p className="text-xs text-gray-500 mt-1">
-                → {(parseFloat(incomeTarget.amount_target) / 12).toFixed(0)} $/mois à facturer
-              </p>
+              <p className="text-xs text-slate-400 mt-1">→ {(parseFloat(incomeTarget.amount_target) / 12).toFixed(0)} $/mois</p>
             )}
           </div>
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Note (optionnel)</label>
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Note</label>
             <input type="text" value={incomeTarget.note}
               onChange={e => setIncomeTarget(p => ({ ...p, note: e.target.value }))}
-              placeholder="Ex: Basé sur 3 contrats/mois"
-              className="w-full border rounded-lg p-2 text-sm" />
+              placeholder="Ex: Basé sur 3 contrats/mois" className={inputCls} />
           </div>
           <button onClick={handleSaveTarget} disabled={savingTarget}
-            className="bg-gray-700 text-white rounded-lg p-2 text-sm font-medium">
+            className="w-full bg-slate-700 hover:bg-slate-800 text-white rounded-xl py-2.5 text-sm font-semibold transition-colors">
             {savingTarget ? 'Enregistrement...' : 'Sauvegarder revenu cible'}
           </button>
         </div>
       </div>
 
-      {/* Retraite */}
-      <Section title="🏦 Retraite (10%)" categories={retirementCats} budgets={budgets} onChange={handleChange} />
+      <BudgetSection title="🏦 Retraite (10%)" categories={retirementCats} budgets={budgets} onChange={handleChange} />
+      <BudgetSection title="💰 Épargne (35%)" categories={savingsCats} budgets={budgets} onChange={handleChange} />
+      <BudgetSection title="🛒 Dépenses (55%)" categories={spendingCats} budgets={budgets} onChange={handleChange} />
 
-      {/* Épargne */}
-      <Section title="💰 Épargne (35%)" categories={savingsCats} budgets={budgets} onChange={handleChange} />
-
-      {/* Dépenses */}
-      <Section title="🛒 Dépenses (55%)" categories={spendingCats} budgets={budgets} onChange={handleChange} />
-
-      {/* Bouton save */}
-      <div className="fixed bottom-16 left-0 right-0 p-4 bg-white border-t">
+      <div className="fixed bottom-[72px] left-0 right-0 px-4 py-3 bg-white border-t border-slate-100">
         <button onClick={handleSave} disabled={saving}
-          className="w-full bg-blue-600 text-white rounded-lg p-4 font-semibold">
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-3.5 font-semibold text-sm transition-colors">
           {saving ? 'Enregistrement...' : 'Sauvegarder le budget'}
         </button>
-        {status === 'success' && <p className="text-green-600 text-center mt-2">✅ Budget sauvegardé</p>}
-        {status === 'error' && <p className="text-red-600 text-center mt-2">❌ Erreur — voir console</p>}
+        {status === 'success' && <p className="text-emerald-600 text-center text-sm mt-2">✓ Budget sauvegardé</p>}
+        {status === 'error' && <p className="text-red-500 text-center text-sm mt-2">Erreur — voir console</p>}
       </div>
     </div>
   )
 }
 
-function Section({ title, categories, budgets, onChange }) {
+function BudgetSection({ title, categories, budgets, onChange }) {
   const total = categories.reduce((sum, c) => sum + parseFloat(budgets[c.id] || 0), 0)
+  if (categories.length === 0) return null
 
   return (
-    <div className="mb-6">
+    <div className="mb-5">
       <div className="flex justify-between items-center mb-2">
-        <h2 className="font-semibold text-gray-700">{title}</h2>
-        <span className="text-sm text-gray-500">
-          {total.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}/an
-        </span>
+        <h2 className="text-sm font-semibold text-slate-600">{title}</h2>
+        <span className="text-xs text-slate-400">{total.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}/an</span>
       </div>
-      <div className="flex flex-col gap-2">
-        {categories.map(c => (
-          <div key={c.id} className="flex items-center gap-2 border rounded-lg p-3">
-            <span className="text-sm text-gray-600 w-8">{c.code}</span>
-            <span className="text-sm flex-1">{c.name}</span>
-            <div className="flex items-center gap-1">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        {categories.map((c, idx) => (
+          <div key={c.id} className={`flex items-center gap-3 px-4 py-3 ${idx < categories.length - 1 ? 'border-b border-slate-50' : ''}`}>
+            <span className="text-xs font-bold text-slate-400 w-8 shrink-0">{c.code}</span>
+            <span className="text-sm text-slate-700 flex-1">{c.name}</span>
+            <div className="flex items-center gap-1.5">
               <input
                 type="number"
                 value={budgets[c.id] || ''}
                 onChange={e => onChange(c.id, e.target.value)}
                 placeholder="0"
-                className="w-28 border rounded p-1 text-right text-sm"
+                className="w-24 border border-slate-200 rounded-lg px-2 py-1.5 text-right text-sm bg-white focus:outline-none focus:border-indigo-400"
               />
-              <span className="text-xs text-gray-400">$/an</span>
+              <span className="text-xs text-slate-400">$/an</span>
             </div>
           </div>
         ))}

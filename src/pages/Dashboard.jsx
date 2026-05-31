@@ -88,14 +88,18 @@ export default function Dashboard() {
   const totalSpent = spendingRows.reduce((s, r) => s + r.spent, 0)
   const totalBudget = spendingRows.reduce((s, r) => s + r.budget, 0)
 
-  if (loading) return <div style={{ padding: '24px' }}>Chargement...</div>
+  if (loading) return (
+    <div className="flex items-center justify-center pt-20">
+      <div className="text-slate-400 text-sm">Chargement...</div>
+    </div>
+  )
 
   return (
-    <div style={{ maxWidth: '480px', margin: '0 auto', padding: '16px', paddingBottom: '96px' }}>
+    <div className="max-w-md mx-auto px-4 pt-4 pb-28">
 
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+      <div className="flex gap-2 mb-5">
         <select value={month} onChange={e => setMonth(Number(e.target.value))}
-          style={{ flex: 1, border: '1px solid #d1d5db', borderRadius: '8px', padding: '8px' }}>
+          className="flex-1 border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-indigo-400">
           {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
             <option key={m} value={m}>
               {new Date(2000, m - 1).toLocaleString('fr-CA', { month: 'long' })}
@@ -103,15 +107,13 @@ export default function Dashboard() {
           ))}
         </select>
         <select value={year} onChange={e => setYear(Number(e.target.value))}
-          style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '8px' }}>
-          {[2025, 2026, 2027].map(y => (
-            <option key={y} value={y}>{y}</option>
-          ))}
+          className="border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-indigo-400">
+          {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
 
       {summary && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '24px' }}>
+        <div className="grid grid-cols-3 gap-2 mb-4">
           <BlockCard label="Retraite 10%" amount={summary.totalRetirement} bg="#eff6ff" color="#1d4ed8" />
           <BlockCard label="Épargne 35%" amount={summary.totalSavings} bg="#f0fdf4" color="#15803d" />
           <BlockCard label="Dépenses 55%" amount={summary.totalSpending} bg="#fff7ed" color="#c2410c" />
@@ -119,77 +121,93 @@ export default function Dashboard() {
       )}
 
       {summary && (
-        <div style={{ background: '#f3f4f6', borderRadius: '8px', padding: '12px', marginBottom: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-            <span style={{ fontSize: '14px', color: '#6b7280' }}>Revenu net du mois</span>
-            <span style={{ fontWeight: 'bold' }}>{summary.totalIncome.toFixed(2)} $</span>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-4 py-3 mb-5">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-slate-500">Revenu net du mois</span>
+            <span className="font-bold text-slate-800">{summary.totalIncome.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</span>
           </div>
           {summary.revenuCible > 0 && (
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '12px', color: '#9ca3af' }}>Cible mensuelle</span>
-              <span style={{ fontSize: '12px', color: summary.totalIncome >= summary.revenuCible ? '#16a34a' : '#dc2626', fontWeight: '500' }}>
-                {summary.revenuCible.toFixed(2)} $ {summary.totalIncome >= summary.revenuCible ? '✅' : '⚠️'}
+            <div className="flex justify-between items-center mt-1.5 pt-1.5 border-t border-slate-50">
+              <span className="text-xs text-slate-400">Cible mensuelle</span>
+              <span className={`text-xs font-semibold ${summary.totalIncome >= summary.revenuCible ? 'text-emerald-600' : 'text-red-500'}`}>
+                {summary.revenuCible.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })} {summary.totalIncome >= summary.revenuCible ? '✓' : '↓'}
               </span>
             </div>
           )}
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-        <h2 style={{ fontWeight: 'bold', color: '#374151' }}>🛒 Dépenses (55%)</h2>
-        <span style={{ fontSize: '14px', fontWeight: '500', color: totalSpent > totalBudget ? '#dc2626' : '#16a34a' }}>
-          {(totalBudget - totalSpent).toFixed(2)} $ restant
+      <SectionHeader icon="🛒" title="Dépenses (55%)">
+        <span className={`text-xs font-semibold ${totalSpent > totalBudget ? 'text-red-500' : 'text-emerald-600'}`}>
+          {(totalBudget - totalSpent).toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })} restant
         </span>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
-        {spendingRows.map(r => <CategoryRow key={r.id} row={r} />)}
-      </div>
-
-      <h2 style={{ fontWeight: 'bold', color: '#374151', marginBottom: '8px' }}>💰 Épargne (35%)</h2>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
-        {savingsRows.map(r => <CategoryRow key={r.id} row={r} />)}
+      </SectionHeader>
+      <div className="flex flex-col gap-2 mb-5">
+        {spendingRows.map(r => <CategoryRow key={r.id} row={r} barColor="#f97316" />)}
+        {spendingRows.length === 0 && <EmptyCard text="Aucune catégorie de dépenses" />}
       </div>
 
-      <h2 style={{ fontWeight: 'bold', color: '#374151', marginBottom: '8px' }}>🏦 Retraite (10%)</h2>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {retirementRows.map(r => <CategoryRow key={r.id} row={r} />)}
+      <SectionHeader icon="💰" title="Épargne (35%)" />
+      <div className="flex flex-col gap-2 mb-5">
+        {savingsRows.map(r => <CategoryRow key={r.id} row={r} barColor="#10b981" />)}
+        {savingsRows.length === 0 && <EmptyCard text="Aucune catégorie d'épargne" />}
+      </div>
+
+      <SectionHeader icon="🏦" title="Retraite (10%)" />
+      <div className="flex flex-col gap-2">
+        {retirementRows.map(r => <CategoryRow key={r.id} row={r} barColor="#3b82f6" />)}
+        {retirementRows.length === 0 && <EmptyCard text="Aucune catégorie de retraite" />}
       </div>
 
     </div>
   )
+}
+
+function SectionHeader({ icon, title, children }) {
+  return (
+    <div className="flex justify-between items-center mb-2">
+      <h2 className="text-sm font-semibold text-slate-600">{icon} {title}</h2>
+      {children}
+    </div>
+  )
+}
+
+function EmptyCard({ text }) {
+  return <p className="text-xs text-slate-400 text-center py-3">{text}</p>
 }
 
 function BlockCard({ label, amount, bg, color }) {
   return (
-    <div style={{ background: bg, borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
-      <p style={{ fontSize: '11px', fontWeight: '500', color, marginBottom: '4px' }}>{label}</p>
-      <p style={{ fontSize: '14px', fontWeight: 'bold', color }}>{amount.toFixed(0)} $</p>
+    <div style={{ background: bg, borderRadius: '16px', padding: '12px', textAlign: 'center', border: `1px solid ${color}22` }}>
+      <p style={{ fontSize: '10px', fontWeight: '600', color, marginBottom: '4px', letterSpacing: '0.02em' }}>{label}</p>
+      <p style={{ fontSize: '15px', fontWeight: '700', color }}>{amount.toLocaleString('fr-CA', { maximumFractionDigits: 0 })} $</p>
     </div>
   )
 }
 
-function CategoryRow({ row }) {
+function CategoryRow({ row, barColor }) {
   const pct = row.budget > 0 ? Math.min((row.spent / row.budget) * 100, 100) : 0
   const over = row.spent > row.budget
   return (
-    <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '12px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-        <span style={{ fontSize: '14px' }}>{row.code} — {row.name}</span>
-        <span style={{ fontSize: '14px', fontWeight: '500', color: over ? '#dc2626' : '#374151', marginLeft: '8px', whiteSpace: 'nowrap' }}>
-          {row.remaining.toFixed(0)} $
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-4 py-3">
+      <div className="flex justify-between items-center mb-2">
+        <span className="text-sm text-slate-700 font-medium">{row.code} — {row.name}</span>
+        <span className={`text-sm font-semibold ml-2 whitespace-nowrap ${over ? 'text-red-500' : 'text-slate-700'}`}>
+          {row.remaining.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}
         </span>
       </div>
-      <div style={{ width: '100%', backgroundColor: '#e5e7eb', borderRadius: '9999px', height: '8px' }}>
+      <div className="w-full bg-slate-100 rounded-full h-1.5">
         <div style={{
           width: `${pct}%`,
-          height: '8px',
+          height: '6px',
           borderRadius: '9999px',
-          backgroundColor: over ? '#ef4444' : '#3b82f6'
+          backgroundColor: over ? '#ef4444' : barColor,
+          transition: 'width 0.3s ease',
         }} />
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px', fontSize: '11px', color: '#9ca3af' }}>
-        <span>{row.spent.toFixed(0)} $ dépensé</span>
-        <span>{row.budget.toFixed(0)} $ budget</span>
+      <div className="flex justify-between mt-1.5">
+        <span className="text-xs text-slate-400">{row.spent.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })} dépensé</span>
+        <span className="text-xs text-slate-400">{row.budget.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })} budget</span>
       </div>
     </div>
   )
