@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
+import RevenusListe from '../components/RevenusListe'
 
 const today = new Date().toISOString().split('T')[0]
 
@@ -18,6 +19,7 @@ export default function AddIncome() {
   const [preview, setPreview] = useState(null)
   const [etaléPreview, setEtaléPreview] = useState(null)
   const [etaléConfirmed, setEtaléConfirmed] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     async function fetchSplit() {
@@ -61,6 +63,7 @@ export default function AddIncome() {
     if (error) { setStatus('error'); console.error(error) }
     else {
       setStatus('success')
+      setRefreshKey(k => k + 1)
       setForm({ date: today, amount: '', type: 'variable', source: '', description: '', employer_contribution: '', employer_contribution_note: '' })
       setPreview(null)
     }
@@ -123,6 +126,7 @@ export default function AddIncome() {
     if (error) { setStatus('error'); console.error(error) }
     else {
       setStatus('success')
+      setRefreshKey(k => k + 1)
       setEtaléForm({ date: today, montant_total: '', source: '', nb_periodes: '', frequence: 'bihebdomadaire', description: '' })
       setEtaléPreview(null)
       setEtaléConfirmed(false)
@@ -274,6 +278,7 @@ export default function AddIncome() {
           </div>
         )}
       </div>
+      <RevenusListe refreshKey={refreshKey} />
     </div>
   )
 }

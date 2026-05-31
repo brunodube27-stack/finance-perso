@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { useCategories } from '../hooks/useCategories'
 import { useAccounts } from '../hooks/useAccounts'
+import DepensesListe from '../components/DepensesListe'
 
 const today = new Date().toISOString().split('T')[0]
 
@@ -20,6 +21,7 @@ export default function AddTransaction() {
     is_recurring: false,
   })
   const [status, setStatus] = useState(null)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target
@@ -38,6 +40,7 @@ export default function AddTransaction() {
       console.error(error)
     } else {
       setStatus('success')
+      setRefreshKey(k => k + 1)
       setForm({
         date: today,
         amount: '',
@@ -135,6 +138,7 @@ export default function AddTransaction() {
 
         </form>
       </div>
+      <DepensesListe refreshKey={refreshKey} />
     </div>
   )
 }
