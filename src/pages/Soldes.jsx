@@ -111,7 +111,7 @@ export default function Soldes() {
     setSaving(true)
     setStatus(null)
 
-    const upserts = Object.entries(balances)
+    const rows = Object.entries(balances)
       .filter(([_, e]) => e.balance !== '' && e.balance !== null && e.balance !== undefined)
       .map(([account_id, e]) => ({
         account_id,
@@ -121,14 +121,31 @@ export default function Soldes() {
         note: e.note || null,
       }))
 
-    const { error } = await supabase
+    const { error: delError } = await supabase
       .from('account_balances')
-      .upsert(upserts, { onConflict: 'account_id,year,month' })
+      .delete()
+      .eq('year', year)
+      .eq('month', month)
+
+    if (delError) {
+      console.error('delete error', delError)
+      setSaving(false)
+      setStatus('error')
+      return
+    }
+
+    if (rows.length === 0) {
+      setSaving(false)
+      setStatus('success')
+      return
+    }
+
+    const { error } = await supabase.from('account_balances').insert(rows)
 
     setSaving(false)
     if (error) {
       setStatus('error')
-      console.error(error)
+      console.error('insert error', error)
     } else {
       setStatus('success')
       if (showHistory) setShowHistory(false)
