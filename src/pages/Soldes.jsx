@@ -41,12 +41,15 @@ export default function Soldes() {
         .from('account_balances')
         .select('*')
         .eq('date', dateKey)
+        .order('id', { ascending: false })
 
       if (cancelled) return
 
       const map = {}
       existing?.forEach(e => {
-        map[e.account_id] = { balance: e.balance ?? '', rowId: e.id }
+        if (!map[e.account_id]) {
+          map[e.account_id] = { balance: e.balance ?? '', rowId: e.id }
+        }
       })
 
       if (accs) {
