@@ -20,6 +20,8 @@ export default function Soldes() {
   const [showHistory, setShowHistory] = useState(false)
 
   useEffect(() => {
+    let cancelled = false
+
     async function fetchData() {
       const { data: accs } = await supabase
         .from('accounts')
@@ -28,6 +30,8 @@ export default function Soldes() {
         .order('block')
         .order('name')
 
+      if (cancelled) return
+
       setAccounts(accs || [])
 
       const { data: existing } = await supabase
@@ -35,6 +39,8 @@ export default function Soldes() {
         .select('*')
         .eq('year', year)
         .eq('month', month)
+
+      if (cancelled) return
 
       const map = {}
       existing?.forEach(e => {
@@ -50,6 +56,8 @@ export default function Soldes() {
           .eq('year', prevYear)
           .eq('month', prevMonth)
 
+        if (cancelled) return
+
         const prevMap = {}
         prev?.forEach(e => { prevMap[e.account_id] = e.balance })
 
@@ -62,7 +70,9 @@ export default function Soldes() {
 
       setBalances(map)
     }
+
     fetchData()
+    return () => { cancelled = true }
   }, [year, month])
 
   useEffect(() => {
