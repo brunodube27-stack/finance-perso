@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
+import MetauxSection from '../components/MetauxSection'
 
 const now = new Date()
 const currentYear = now.getFullYear()
@@ -205,6 +206,8 @@ export default function Soldes() {
       <BalanceSection title="💳 Dépenses" accounts={spendingAccounts} balances={balances} onChange={handleChange} />
       <BalanceSection title="💰 Épargne" accounts={savingsAccounts} balances={balances} onChange={handleChange} />
       <BalanceSection title="🏦 Retraite" accounts={retirementAccounts} balances={balances} onChange={handleChange} />
+
+      <MetauxSection year={year} month={month} />
 
       <button
         onClick={() => setShowHistory(v => !v)}
