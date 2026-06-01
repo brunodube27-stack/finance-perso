@@ -158,8 +158,8 @@ export default function MetauxSection({ year, month }) {
                   </span>
                 )}
               </div>
-              {value > 0 && (
-                <span className="text-sm font-bold text-amber-700">
+              {oz > 0 && (
+                <span className="text-sm font-bold text-red-500">
                   {value.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}
                 </span>
               )}
